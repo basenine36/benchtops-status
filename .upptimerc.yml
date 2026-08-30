@@ -107,15 +107,15 @@ status-website:
 
       main.container section.live-status article.graph {
         min-height: 0;
-        padding: 1.25rem 1.25rem 11rem;
+        padding: 1.25rem 1.25rem 11.25rem;
         background-position: center bottom !important;
-        background-size: calc(100% - 2rem) auto !important;
+        background-size: calc(100% - 2rem) 8.75rem !important;
       }
 
       main.container section.live-status article.graph::after {
         top: auto;
         right: 1.25rem;
-        bottom: 9.5rem;
+        bottom: 9.75rem;
         left: 1.25rem;
         border-top: 1px solid var(--card-border-color);
         border-left: 0;
@@ -124,11 +124,12 @@ status-website:
 
     @media (max-width: 420px) {
       main.container section.live-status article.graph {
-        padding-bottom: 9.5rem;
+        padding-bottom: 10rem;
+        background-size: calc(100% - 2rem) 7.5rem !important;
       }
 
       main.container section.live-status article.graph::after {
-        bottom: 8rem;
+        bottom: 8.5rem;
       }
     }
   js: |
