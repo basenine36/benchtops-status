@@ -22,5 +22,162 @@ status-website:
   name: Benchtop Planner Status
   introTitle: Benchtop Planner service status
   introMessage: Current availability and response times for the Benchtop Planner website, application and database.
+  links:
+    - rel: stylesheet
+      href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css
+  css: |
+    :root {
+      color-scheme: light dark;
+    }
+
+    /* Keep service details and response graphs in separate visual regions. */
+    main.container section.live-status article.graph {
+      box-sizing: border-box;
+      min-height: 9.5rem;
+      overflow: hidden;
+      padding: 1.25rem calc(44% + 1.5rem) 1.25rem 1.25rem;
+      background-position: right center !important;
+      background-size: 42% auto !important;
+    }
+
+    main.container section.live-status article.graph::after {
+      content: "";
+      position: absolute;
+      top: 1rem;
+      right: 44%;
+      bottom: 1rem;
+      border-left: 1px solid var(--card-border-color);
+      pointer-events: none;
+    }
+
+    main.container section.live-status article.graph > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    main.container section.live-status article.graph h4 {
+      overflow-wrap: anywhere;
+    }
+
+    /* Professional status symbols, with the wording retained for accessibility. */
+    .status-fa-icon {
+      display: inline-block;
+      width: 1.25em;
+      margin-right: 0.55rem;
+      text-align: center;
+    }
+
+    .status-fa-icon.fa-circle-check {
+      color: var(--up-border-left-color);
+    }
+
+    .status-fa-icon.fa-circle-xmark {
+      color: var(--down-border-left-color);
+    }
+
+    .status-fa-icon.fa-triangle-exclamation {
+      color: var(--degraded-border-left-color);
+    }
+
+    article.down:not(.degraded) h4::before,
+    article.degraded h4::before {
+      display: inline-block;
+      width: 1.25em;
+      margin-right: 0.55rem;
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      text-align: center;
+    }
+
+    article.down:not(.degraded) h4::before {
+      content: "\f057";
+      color: var(--down-border-left-color);
+    }
+
+    article.degraded h4::before {
+      content: "\f071";
+      color: var(--degraded-border-left-color);
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding-right: 1.25rem;
+        padding-left: 1.25rem;
+      }
+
+      main.container section.live-status article.graph {
+        min-height: 0;
+        padding: 1.25rem 1.25rem 11rem;
+        background-position: center bottom !important;
+        background-size: calc(100% - 2rem) auto !important;
+      }
+
+      main.container section.live-status article.graph::after {
+        top: auto;
+        right: 1.25rem;
+        bottom: 9.5rem;
+        left: 1.25rem;
+        border-top: 1px solid var(--card-border-color);
+        border-left: 0;
+      }
+    }
+
+    @media (max-width: 420px) {
+      main.container section.live-status article.graph {
+        padding-bottom: 9.5rem;
+      }
+
+      main.container section.live-status article.graph::after {
+        bottom: 8rem;
+      }
+    }
+  js: |
+    (() => {
+      const statusIcons = new Map([
+        ["✅", "fa-circle-check"],
+        ["🛑", "fa-circle-xmark"],
+        ["⚠️", "fa-triangle-exclamation"],
+        ["⚠", "fa-triangle-exclamation"],
+      ]);
+      const statusPattern = /(✅|🛑|⚠️|⚠)/g;
+
+      const replaceStatusSymbols = (root) => {
+        if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        while (walker.nextNode()) {
+          if (statusPattern.test(walker.currentNode.nodeValue || "")) textNodes.push(walker.currentNode);
+          statusPattern.lastIndex = 0;
+        }
+        textNodes.forEach((textNode) => {
+          const parts = (textNode.nodeValue || "").split(statusPattern);
+          const fragment = document.createDocumentFragment();
+          parts.forEach((part) => {
+            const iconName = statusIcons.get(part);
+            if (!iconName) {
+              fragment.append(document.createTextNode(part));
+              return;
+            }
+            const icon = document.createElement("i");
+            icon.className = `status-fa-icon fa-solid ${iconName}`;
+            icon.setAttribute("aria-hidden", "true");
+            fragment.append(icon);
+          });
+          textNode.replaceWith(fragment);
+        });
+      };
+
+      const start = () => {
+        replaceStatusSymbols(document.body);
+        new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) replaceStatusSymbols(node);
+          }));
+        }).observe(document.body, { childList: true, subtree: true });
+      };
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+      else start();
+    })();
 
 skipDeleteIssues: true
